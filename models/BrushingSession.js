@@ -15,11 +15,14 @@ const brushingSessionSchema = new mongoose.Schema(
       required: true,
       enum: ['morning', 'noon', 'evening'], // Ne peut prendre que ces valeurs
     },
-    // Date et heure exactes du brossage (sera défini par défaut à la création)
-    // On pourrait aussi le recevoir du front-end si l'enregistrement est différé
+    
     timestamp: {
         type: Date,
         default: Date.now
+    },
+    duration: {
+        type: Number,
+        required: true,
     }
     // Note: Les timestamps (createdAt, updatedAt) sont aussi ajoutés automatiquement
   },
