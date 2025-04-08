@@ -94,4 +94,28 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 };
 
-// On pourrait ajouter Logout, Forgot Password, etc. plus tard
+// @desc    Récupérer l'utilisateur actuellement connecté
+// @route   GET /api/v1/auth/me
+// @access  Private
+exports.getMe = async (req, res, next) => {
+  try {
+    // req.user est défini par le middleware 'protect'
+    // On récupère l'utilisateur SANS son mot de passe (même si select: false dans le modèle, c'est plus sûr)
+    const user = await User.findById(req.user.id).select('-password');
+
+    if (!user) {
+      // Normalement impossible si le token est valide, mais sécurité
+       return res.status(404).json({ success: false, error: 'Utilisateur non trouvé' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user // Renvoie toutes les infos de l'utilisateur (name, email, score, streaks, etc.)
+    });
+
+  } catch (error) {
+     console.error("Erreur getMe:", error);
+     res.status(500).json({ success: false, error: 'Erreur serveur' });
+     // next(error);
+  }
+};
