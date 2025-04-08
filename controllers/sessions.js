@@ -39,12 +39,12 @@ exports.logSession = async (req, res, next) => {
 
     // --- 1. Mise à jour du Score (MODIFIÉ) ---
     let scoreToAdd = 0;
-    // Règles : 0-59s = 5pts; 60-109s = 10pts; 110-120s = 20pts
+    // Règles : 30-59s = 5pts; 60-109s = 10pts; 110-120s = 20pts
     if (duration >= 110) { // Inclut 1min50s jusqu'à 2min (120s) et potentiellement un peu plus
         scoreToAdd = 20;
     } else if (duration >= 60) { // 1min (60s) jusqu'à 1min49 (109s)
         scoreToAdd = 10;
-    } else if (duration > 0) { // Plus que 0s jusqu'à 59s
+    } else if (duration > 30) { // Plus que 0s jusqu'à 59s
         scoreToAdd = 5;
     }
     // Si duration est 0 ou négatif (même si validé avant), scoreToAdd reste 0.
@@ -63,7 +63,7 @@ exports.logSession = async (req, res, next) => {
       user: userId,
       sessionType: sessionType,
       timestamp: now,
-      duration: duration // Nécessiterait d'ajouter 'duration: Number' au BrushingSessionSchema
+      duration: duration ,
     });
 
     res.status(201).json({ success: true, data: session, scoreAdded: scoreToAdd }); // On peut renvoyer le score ajouté
