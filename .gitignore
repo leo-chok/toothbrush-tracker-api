@@ -1,0 +1,38 @@
+# Fichier d'environnement contenant les secrets
+.env
+
+# Dépendances
+node_modules/
+
+# Fichiers de log
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Fichiers de cache et temporaires divers
+.DS_Store
+.cache
+*.tmp
+*.swp
+
+# Répertoire de build (si vous en utilisez un pour la production)
+/dist
+/build
+
+# Fichiers générés par certains IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers OS
+Thumbs.db
+ehthumbs.db
+
+# Fichiers coverage (tests)
+coverage/
+.nyc_output/
