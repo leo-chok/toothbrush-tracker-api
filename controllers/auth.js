@@ -1,5 +1,6 @@
 // controllers/auth.js
 const User = require('../models/User'); // Importe le modèle User
+const { startOfDay, differenceInCalendarDays } = require('date-fns');
 
 // @desc    Inscription (Register) d'un nouvel utilisateur
 // @route   POST /api/v1/auth/register
@@ -106,6 +107,37 @@ exports.getMe = async (req, res, next) => {
     if (!user) {
       // Normalement impossible si le token est valide, mais sécurité
        return res.status(404).json({ success: false, error: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier seulement si l'utilisateur a une série en cours (>0)
+    // et si une date de dernière série complétée existe.
+    if (user.currentStreak > 0 && user.lastCompletedStreakDay) {
+      const today = startOfDay(new Date()); // Début du jour actuel (heure serveur)
+      const lastDay = startOfDay(user.lastCompletedStreakDay); // Début du dernier jour complété
+
+      const daysDifference = differenceInCalendarDays(today, lastDay);
+
+      // Log pour débogage (peut être retiré en production)
+      console.log(`[getMe] Check Streak Reset: User=${user.email}, Today=${today.toISOString()}, LastCompleted=${lastDay.toISOString()}, Diff=${daysDifference} days, CurrentStreak=${user.currentStreak}`);
+
+      // Si plus d'un jour s'est écoulé entre aujourd'hui et le dernier jour complété...
+      if (daysDifference > 1) {
+        console.log(`[getMe] Streak reset detected for User=${user.email}! Diff=${daysDifference} days. Setting currentStreak to 0.`);
+        user.currentStreak = 0; // Remettre la série à zéro
+
+        // Sauvegarder la modification dans la base de données
+        try {
+          await user.save(); // Sauvegarde l'utilisateur avec currentStreak = 0
+          console.log(`[getMe] User ${user.email} saved with streak reset.`);
+        } catch (saveError) {
+          // Si la sauvegarde échoue, on loggue l'erreur mais on continue
+          // pour quand même renvoyer les données (avec le streak à 0 en mémoire).
+          // Le prochain appel à /auth/me ou /sessions retentera probablement.
+          console.error(`[getMe] Failed to save user after streak reset for ${user.email}:`, saveError);
+          // On pourrait choisir de renvoyer une erreur ici si la sauvegarde est critique:
+          // return next(new ErrorResponse('Erreur sauvegarde après reset série', 500));
+        }
+      }
     }
 
     res.status(200).json({
